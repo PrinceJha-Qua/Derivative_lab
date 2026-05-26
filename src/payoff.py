@@ -1,9 +1,17 @@
 
 import numpy as np
+
+# primitive payoff geometry
 def call_payoff(strike_p, stock_p):
     payoff = np.maximum(stock_p - strike_p, 0)
     return payoff
+def put_payoff(strike_p, stock_p):
+    payoff = np.maximum(strike_p - stock_p, 0)
+    return payoff
+def long_stock(stock_p, stock_purchase_price):
+    return stock_p - stock_purchase_price
 
+# directional positions
 def long_call(strike_p, stock_p):
     return call_payoff(strike_p, stock_p)
 
@@ -11,26 +19,36 @@ def short_call(strike_p, stock_p):
     return -1 * call_payoff(strike_p, stock_p)
 
 def long_put(strike_p, stock_p):
-    return call_payoff(stock_p , strike_p)  # put_payoff(strick_p, stock_p) ----> return max(stock_p - strike_p)
+    return put_payoff(strike_p , stock_p) 
 
 def short_put(strike_p, stock_p):
-    return -1 * call_payoff(stock_p , strike_p)  # put_payoff(strick_p, stock_p) ----> return max(stock_p - strike_p)                                                                                                                               
+    return -1 * put_payoff(strike_p , stock_p)                                                                                                                                 
 
-
-
+# PnL positions
 def long_call_profit(strike_p, stock_p, premium):
-    return call_payoff(strike_p, stock_p) - premium
+    return  long_call(strike_p, stock_p) - premium
 
 def short_call_profit(strike_p, stock_p, premium):
-    return -1 * call_payoff(strike_p, stock_p) + premium
+    return short_call(strike_p, stock_p) + premium
 
 def long_put_profit(strike_p, stock_p, premium):
-    return call_payoff(stock_p , strike_p) - premium # put_payoff(strick_p, stock_p) ----> return max(stock_p - strike_p, 0)
+    return long_put(strike_p, stock_p) - premium 
 
 def short_put_profit(strike_p, stock_p, premium):
-    return -1 * call_payoff(stock_p , strike_p) + premium # put_payoff(strick_p, stock_p) ----> return max(stock_p - strike_p, 0)                                                                                                                               
+    return short_put(strike_p, stock_p) + premium 
 
-
-
+# strategy composition
 def bull_call_spread(high_strike, low_strike, stock_p):
     return long_call(low_strike,stock_p) + short_call(high_strike, stock_p) 
+
+def covered_call(strike_p, stock_p, stock_purchase_p, premium):
+    return long_stock(stock_p, stock_purchase_p) + short_call_profit(strike_p, stock_p, premium)
+
+def protective_put(strike_p, stock_p, stock_purchase_p, premium):
+    return long_put_profit(strike_p, stock_p, premium) + long_stock(stock_p, stock_purchase_p)
+
+def long_straddle(same_strike_p, stock_p, call_premium, put_premium):
+    return long_call_profit(same_strike_p, stock_p, call_premium) + long_put_profit(same_strike_p, stock_p, put_premium)
+
+def long_strangle(high_strike, low_strike, stock_p, call_premium, put_premium):
+    return long_call_profit(high_strike, stock_p, call_premium) + long_put_profit(low_strike, stock_p, put_premium)
